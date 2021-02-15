@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS "posts";
+DROP TABLE IF EXISTS "user_tokens";
+DROP TABLE IF EXISTS "user_data";
+DROP TABLE IF EXISTS "users";
