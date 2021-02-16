@@ -3,8 +3,8 @@ CREATE TABLE "blog_user" (
   "username" varchar UNIQUE NOT NULL,
   "email" varchar UNIQUE NOT NULL,
   "full_name" varchar NOT NULL,
-  "gender" varchar,
-  "location" varchar,
+  "gender" varchar NOT NULL,
+  "current_location" varchar NOT NULL,
   "password_hash" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "logined_at" timestamptz NOT NULL DEFAULT (now())
@@ -15,10 +15,10 @@ CREATE TABLE "post" (
   "semantic_id" varchar NOT NULL,
   "author_id" bigint NOT NULL,
   "title" varchar NOT NULL,
-  "description" varchar,
-  "content" varchar,
-  "tags" varchar[],
-  "archived" boolean NOT NULL DEFAULT false,
+  "abstract" varchar NOT NULL,
+  "content" varchar NOT NULL,
+  "tags" varchar[] NOT NULL,
+  "is_archived" boolean NOT NULL DEFAULT false,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
