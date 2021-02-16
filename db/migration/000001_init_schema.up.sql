@@ -1,50 +1,42 @@
-CREATE TABLE "users" (
+CREATE TABLE "blog_user" (
   "id" bigserial PRIMARY KEY,
-  "username" varchar NOT NULL,
-  "email" varchar NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (now())
-);
-
-CREATE TABLE "user_tokens" (
-  "id" bigserial PRIMARY KEY,
-  "user_id" bigint NOT NULL,
-  "token" varchar NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (now())
-);
-
-CREATE TABLE "user_data" (
-  "id" bigserial PRIMARY KEY,
-  "user_id" bigint NOT NULL,
+  "username" varchar UNIQUE NOT NULL,
+  "email" varchar UNIQUE NOT NULL,
   "full_name" varchar NOT NULL,
-  "sex" varchar,
+  "gender" varchar,
   "location" varchar,
-  "created_at" timestamptz NOT NULL DEFAULT (now())
+  "password_hash" varchar NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "logined_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "posts" (
+CREATE TABLE "post" (
   "id" bigserial PRIMARY KEY,
   "semantic_id" varchar NOT NULL,
   "author_id" bigint NOT NULL,
   "title" varchar NOT NULL,
   "description" varchar,
-  "tags" varchar[],
   "content" varchar,
+  "tags" varchar[],
+  "archived" boolean NOT NULL DEFAULT false,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "user_tokens" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "post" ADD FOREIGN KEY ("author_id") REFERENCES "blog_user" ("id");
 
-ALTER TABLE "user_data" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+CREATE INDEX ON "blog_user" ("username");
 
-ALTER TABLE "posts" ADD FOREIGN KEY ("author_id") REFERENCES "users" ("id");
+CREATE INDEX ON "blog_user" ("email");
 
-CREATE INDEX ON "users" ("username");
+CREATE INDEX ON "post" ("author_id");
 
-CREATE INDEX ON "user_tokens" ("user_id");
+CREATE INDEX ON "post" ("semantic_id");
 
-CREATE INDEX ON "user_data" ("user_id");
+COMMENT ON COLUMN "blog_user"."username" IS 'can be change';
 
-CREATE INDEX ON "posts" ("author_id");
+COMMENT ON COLUMN "blog_user"."email" IS 'can be change';
 
-CREATE INDEX ON "posts" ("semantic_id");
+COMMENT ON COLUMN "blog_user"."gender" IS 'male, female, other';
+
+COMMENT ON COLUMN "blog_user"."password_hash" IS 'password hashed with SHA-512';
