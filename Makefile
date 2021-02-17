@@ -1,6 +1,12 @@
 postgres:
-	docker rm postgres13.2
+	docker rm postgres13.2 || docker stop postgres13.2 && docker rm postgres13.2 || true
 	docker run --name postgres13.2 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:13.2-alpine
+
+run-postgres:
+	docker run --name postgres13.2 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:13.2-alpine
+
+stop-postgres:
+	docker stop postgres13.2
 
 createdb:
 	docker exec -it postgres13.2 createdb --username=root --owner=root magfile_server
@@ -23,4 +29,7 @@ sqlc:
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb dropdb migrateup migratedown
+reset-db:
+	make stop-postgres;make postgres;sleep 5;make createdb;make migrateup;sleep .5;echo "\nRest DB done.";
+
+.PHONY: postgres run-postgres stop-postgres createdb dropdb migrateup migratedown sqlc test reset-db
