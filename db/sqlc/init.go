@@ -6,20 +6,21 @@ import (
 	"log"
 )
 
-// Database is the extension struct of Queries
-type Database struct {
-	*Queries
-	Conn *sql.DB
-}
+// // Database is the extension struct of Queries
+// type Database struct {
+// 	q    *Queries
+// 	Conn *sql.DB
+// }
+
+var database *Queries
 
 // NewDatabase return a Database and connect it with *sql.DB
-func NewDatabase(conn *sql.DB) *Database {
-	return &Database{Conn: conn}
-}
+// func NewDatabase(conn *sql.DB) *Queries {
+// 	return &Queries{Conn: conn}
+// }
 
 // Init will initialize stuff for database
-func Init(dbDriver, dbUser, dbPassword, dbHost, dbPort, dbName, dbParams string) (*Database, error) {
-	var database *Database
+func Init(dbDriver, dbUser, dbPassword, dbHost, dbPort, dbName, dbParams string) (*Queries, error) {
 
 	url := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s%s", dbUser, dbPassword, dbHost, dbPort, dbName, dbParams)
 
@@ -28,11 +29,11 @@ func Init(dbDriver, dbUser, dbPassword, dbHost, dbPort, dbName, dbParams string)
 		return database, err
 	}
 
-	database = NewDatabase(conn)
-	err = database.Conn.Ping()
-	if err != nil {
-		return database, err
-	}
+	database = New(conn)
+	// err = database.Ping()
+	// if err != nil {
+	// 	return database, err
+	// }
 
 	log.Println("Database connected")
 	return database, nil

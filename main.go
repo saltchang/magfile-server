@@ -13,6 +13,7 @@ import (
 
 	"github.com/joho/godotenv"
 	db "github.com/saltchang/magfile-server/db/sqlc"
+	"github.com/saltchang/magfile-server/handler"
 )
 
 func userHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +25,7 @@ func userAllHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	err := godotenv.Load()
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -61,15 +62,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
-	defer database.Conn.Close()
+	// defer database.Close()
 
-	http.HandleFunc("/user", userHandler)
-	http.HandleFunc("/user/all", userAllHandler)
+	httpHandler := handler.NewHandler(database)
+	http.HandleFunc("/user/", httpHandler.GetUserByID)
+	// http.HandleFunc("/user/all", userAllHandler)
 
-	// httpHandler := handler.NewHandler(database)
-	server := &http.Server{
-		// Handler: httpHandler,
-	}
+	server := &http.Server{}
 
 	go func() {
 		server.Serve(listener)
