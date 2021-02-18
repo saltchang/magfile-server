@@ -4,6 +4,14 @@ Backend for [Magfile](https://github.com/saltchang/magfile).
 
 ## Getting Started
 
+- setup env file
+
+```bash
+cp .env.exmple .env
+```
+
+and then configure your own env setups
+
 - install [migrate](https://github.com/golang-migrate/migrate)
 
 ```bash
