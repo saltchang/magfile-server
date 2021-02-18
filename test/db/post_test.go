@@ -1,4 +1,4 @@
-package db
+package test
 
 import (
 	"context"
@@ -6,20 +6,23 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/saltchang/magfile-server/db/sqlc"
 	"github.com/saltchang/magfile-server/util"
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomPost(t *testing.T, authorID int64) Post {
-	params := CreatePostParams{
-		SemanticID: util.GetRandomString(6) + "-" + util.GetRandomString(8),
-		AuthorID:   authorID,
-		Title:      util.GetRandomString(16),
-		Abstract:   util.GetRandomString(30),
-		Content:    util.GetRandomString(1000),
-		Tags:       util.GetRandomStringArray(int(util.GetRandomInt(0, 5))),
-		IsArchived: util.GetRandomBoolean(),
-		UpdatedAt:  time.Now().UTC(),
+func createRandomPost(t *testing.T, authorID int64) db.Post {
+	params := db.CreatePostParams{
+		SemanticID:    util.GetRandomString(6) + "-" + util.GetRandomString(8),
+		AuthorID:      authorID,
+		SeriesID:      sql.NullInt64{Valid: false},
+		OrderInSeries: sql.NullInt32{Valid: false},
+		Title:         util.GetRandomString(16),
+		Abstract:      util.GetRandomString(30),
+		Content:       util.GetRandomString(1000),
+		Views:         0,
+		IsArchived:    util.GetRandomBoolean(),
+		UpdatedAt:     time.Now().UTC(),
 	}
 
 	user, err := testQueries.CreatePost(context.Background(), params)
@@ -32,7 +35,6 @@ func createRandomPost(t *testing.T, authorID int64) Post {
 	require.Equal(t, params.Title, user.Title)
 	require.Equal(t, params.Abstract, user.Abstract)
 	require.Equal(t, params.Content, user.Content)
-	require.Equal(t, params.Tags, user.Tags)
 	require.Equal(t, params.IsArchived, user.IsArchived)
 	require.Equal(t, params.UpdatedAt, user.UpdatedAt)
 
@@ -51,7 +53,7 @@ func TestGetPostBySemanticID(t *testing.T) {
 	user := createRandomBlogUser(t)
 	post := createRandomPost(t, user.ID)
 
-	params := GetPostBySemanticIDParams{
+	params := db.GetPostBySemanticIDParams{
 		AuthorID:   user.ID,
 		SemanticID: post.SemanticID,
 	}
@@ -68,7 +70,6 @@ func TestGetPostBySemanticID(t *testing.T) {
 	require.Equal(t, gotPost.Title, post.Title)
 	require.Equal(t, gotPost.Abstract, post.Abstract)
 	require.Equal(t, gotPost.Content, post.Content)
-	require.Equal(t, gotPost.Tags, post.Tags)
 	require.Equal(t, gotPost.IsArchived, post.IsArchived)
 	require.Equal(t, gotPost.UpdatedAt, post.UpdatedAt)
 
@@ -82,7 +83,7 @@ func TestGetPostByPostID(t *testing.T) {
 	user := createRandomBlogUser(t)
 	post := createRandomPost(t, user.ID)
 
-	gotPost, err := testQueries.GetPostByPostID(context.Background(), post.ID)
+	gotPost, err := testQueries.GetPost(context.Background(), post.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, gotPost)
@@ -94,7 +95,6 @@ func TestGetPostByPostID(t *testing.T) {
 	require.Equal(t, gotPost.Title, post.Title)
 	require.Equal(t, gotPost.Abstract, post.Abstract)
 	require.Equal(t, gotPost.Content, post.Content)
-	require.Equal(t, gotPost.Tags, post.Tags)
 	require.Equal(t, gotPost.IsArchived, post.IsArchived)
 	require.Equal(t, gotPost.UpdatedAt, post.UpdatedAt)
 
@@ -138,14 +138,13 @@ func TestUpdatePost(t *testing.T) {
 	user := createRandomBlogUser(t)
 	oldPost := createRandomPost(t, user.ID)
 
-	newParams := UpdatePostParams{
+	newParams := db.UpdatePostParams{
 		ID:         oldPost.ID,
 		SemanticID: util.GetRandomString(6) + "-" + util.GetRandomString(8),
 		AuthorID:   oldPost.AuthorID,
 		Title:      oldPost.Title,
 		Abstract:   util.GetRandomString(30),
 		Content:    util.GetRandomString(1000),
-		Tags:       util.GetRandomStringArray(int(util.GetRandomInt(0, 5))),
 		IsArchived: util.GetRandomBoolean(),
 		UpdatedAt:  time.Now().UTC(),
 	}
@@ -172,8 +171,6 @@ func TestUpdatePost(t *testing.T) {
 	require.Equal(t, newPost.Content, newParams.Content)
 	require.NotEqual(t, newPost.Content, oldPost.Content)
 
-	require.Equal(t, newPost.Tags, newParams.Tags)
-
 	require.Equal(t, newPost.IsArchived, newParams.IsArchived)
 
 	require.WithinDuration(t, newPost.UpdatedAt, newParams.UpdatedAt, time.Second)
@@ -187,13 +184,13 @@ func TestDeletePost(t *testing.T) {
 
 	require.NoError(t, err)
 
-	newPost, err := testQueries.GetPostByPostID(context.Background(), post.ID)
+	newPost, err := testQueries.GetPost(context.Background(), post.ID)
 
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, newPost)
 
-	params := GetPostBySemanticIDParams{
+	params := db.GetPostBySemanticIDParams{
 		AuthorID:   user.ID,
 		SemanticID: post.SemanticID,
 	}

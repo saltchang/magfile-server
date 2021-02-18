@@ -5,46 +5,51 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
-
-	"github.com/lib/pq"
 )
 
 const createPost = `-- name: CreatePost :one
 INSERT INTO post (
   semantic_id,
   author_id,
+  series_id,
+  order_in_series,
   title,
   abstract,
   content,
-  tags,
+  views,
   is_archived,
   updated_at
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING id, semantic_id, author_id, title, abstract, content, tags, is_archived, created_at, updated_at
+RETURNING id, semantic_id, author_id, series_id, order_in_series, title, abstract, content, views, is_archived, updated_at, created_at
 `
 
 type CreatePostParams struct {
-	SemanticID string    `json:"semantic_id"`
-	AuthorID   int64     `json:"author_id"`
-	Title      string    `json:"title"`
-	Abstract   string    `json:"abstract"`
-	Content    string    `json:"content"`
-	Tags       []string  `json:"tags"`
-	IsArchived bool      `json:"is_archived"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	SemanticID    string        `json:"semantic_id"`
+	AuthorID      int64         `json:"author_id"`
+	SeriesID      sql.NullInt64 `json:"series_id"`
+	OrderInSeries sql.NullInt32 `json:"order_in_series"`
+	Title         string        `json:"title"`
+	Abstract      string        `json:"abstract"`
+	Content       string        `json:"content"`
+	Views         int64         `json:"views"`
+	IsArchived    bool          `json:"is_archived"`
+	UpdatedAt     time.Time     `json:"updated_at"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
 	row := q.db.QueryRowContext(ctx, createPost,
 		arg.SemanticID,
 		arg.AuthorID,
+		arg.SeriesID,
+		arg.OrderInSeries,
 		arg.Title,
 		arg.Abstract,
 		arg.Content,
-		pq.Array(arg.Tags),
+		arg.Views,
 		arg.IsArchived,
 		arg.UpdatedAt,
 	)
@@ -53,13 +58,15 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.ID,
 		&i.SemanticID,
 		&i.AuthorID,
+		&i.SeriesID,
+		&i.OrderInSeries,
 		&i.Title,
 		&i.Abstract,
 		&i.Content,
-		pq.Array(&i.Tags),
+		&i.Views,
 		&i.IsArchived,
-		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -75,7 +82,7 @@ func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 }
 
 const getAllPostFromAuthor = `-- name: GetAllPostFromAuthor :many
-SELECT id, semantic_id, author_id, title, abstract, content, tags, is_archived, created_at, updated_at FROM post
+SELECT id, semantic_id, author_id, series_id, order_in_series, title, abstract, content, views, is_archived, updated_at, created_at FROM post
 WHERE author_id = $1
 ORDER BY created_at
 `
@@ -93,13 +100,15 @@ func (q *Queries) GetAllPostFromAuthor(ctx context.Context, authorID int64) ([]P
 			&i.ID,
 			&i.SemanticID,
 			&i.AuthorID,
+			&i.SeriesID,
+			&i.OrderInSeries,
 			&i.Title,
 			&i.Abstract,
 			&i.Content,
-			pq.Array(&i.Tags),
+			&i.Views,
 			&i.IsArchived,
-			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -114,32 +123,34 @@ func (q *Queries) GetAllPostFromAuthor(ctx context.Context, authorID int64) ([]P
 	return items, nil
 }
 
-const getPostByPostID = `-- name: GetPostByPostID :one
-SELECT id, semantic_id, author_id, title, abstract, content, tags, is_archived, created_at, updated_at FROM post
+const getPost = `-- name: GetPost :one
+SELECT id, semantic_id, author_id, series_id, order_in_series, title, abstract, content, views, is_archived, updated_at, created_at FROM post
 WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetPostByPostID(ctx context.Context, id int64) (Post, error) {
-	row := q.db.QueryRowContext(ctx, getPostByPostID, id)
+func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
+	row := q.db.QueryRowContext(ctx, getPost, id)
 	var i Post
 	err := row.Scan(
 		&i.ID,
 		&i.SemanticID,
 		&i.AuthorID,
+		&i.SeriesID,
+		&i.OrderInSeries,
 		&i.Title,
 		&i.Abstract,
 		&i.Content,
-		pq.Array(&i.Tags),
+		&i.Views,
 		&i.IsArchived,
-		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getPostBySemanticID = `-- name: GetPostBySemanticID :one
-SELECT id, semantic_id, author_id, title, abstract, content, tags, is_archived, created_at, updated_at FROM post
+SELECT id, semantic_id, author_id, series_id, order_in_series, title, abstract, content, views, is_archived, updated_at, created_at FROM post
 WHERE author_id = $1
 AND semantic_id = $2
 LIMIT 1
@@ -157,13 +168,15 @@ func (q *Queries) GetPostBySemanticID(ctx context.Context, arg GetPostBySemantic
 		&i.ID,
 		&i.SemanticID,
 		&i.AuthorID,
+		&i.SeriesID,
+		&i.OrderInSeries,
 		&i.Title,
 		&i.Abstract,
 		&i.Content,
-		pq.Array(&i.Tags),
+		&i.Views,
 		&i.IsArchived,
-		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -173,29 +186,33 @@ UPDATE post
 SET (
   semantic_id,
   author_id,
+  series_id,
+  order_in_series,
   title,
   abstract,
   content,
-  tags,
+  views,
   is_archived,
   updated_at
 ) = (
-  $2, $3, $4, $5, $6, $7, $8, $9
+  $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
 WHERE id = $1
-RETURNING id, semantic_id, author_id, title, abstract, content, tags, is_archived, created_at, updated_at
+RETURNING id, semantic_id, author_id, series_id, order_in_series, title, abstract, content, views, is_archived, updated_at, created_at
 `
 
 type UpdatePostParams struct {
-	ID         int64     `json:"id"`
-	SemanticID string    `json:"semantic_id"`
-	AuthorID   int64     `json:"author_id"`
-	Title      string    `json:"title"`
-	Abstract   string    `json:"abstract"`
-	Content    string    `json:"content"`
-	Tags       []string  `json:"tags"`
-	IsArchived bool      `json:"is_archived"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID            int64         `json:"id"`
+	SemanticID    string        `json:"semantic_id"`
+	AuthorID      int64         `json:"author_id"`
+	SeriesID      sql.NullInt64 `json:"series_id"`
+	OrderInSeries sql.NullInt32 `json:"order_in_series"`
+	Title         string        `json:"title"`
+	Abstract      string        `json:"abstract"`
+	Content       string        `json:"content"`
+	Views         int64         `json:"views"`
+	IsArchived    bool          `json:"is_archived"`
+	UpdatedAt     time.Time     `json:"updated_at"`
 }
 
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
@@ -203,10 +220,12 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		arg.ID,
 		arg.SemanticID,
 		arg.AuthorID,
+		arg.SeriesID,
+		arg.OrderInSeries,
 		arg.Title,
 		arg.Abstract,
 		arg.Content,
-		pq.Array(arg.Tags),
+		arg.Views,
 		arg.IsArchived,
 		arg.UpdatedAt,
 	)
@@ -215,13 +234,15 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		&i.ID,
 		&i.SemanticID,
 		&i.AuthorID,
+		&i.SeriesID,
+		&i.OrderInSeries,
 		&i.Title,
 		&i.Abstract,
 		&i.Content,
-		pq.Array(&i.Tags),
+		&i.Views,
 		&i.IsArchived,
-		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }

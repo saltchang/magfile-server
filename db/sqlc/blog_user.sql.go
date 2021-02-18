@@ -20,7 +20,7 @@ INSERT INTO blog_user (
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7
 )
-RETURNING id, username, email, full_name, gender, current_location, password_hash, created_at, logined_at
+RETURNING id, username, email, full_name, gender, current_location, password_hash, logined_at, created_at
 `
 
 type CreateBlogUserParams struct {
@@ -52,8 +52,8 @@ func (q *Queries) CreateBlogUser(ctx context.Context, arg CreateBlogUserParams) 
 		&i.Gender,
 		&i.CurrentLocation,
 		&i.PasswordHash,
-		&i.CreatedAt,
 		&i.LoginedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -69,7 +69,7 @@ func (q *Queries) DeleteBlogUser(ctx context.Context, id int64) error {
 }
 
 const getBlogUser = `-- name: GetBlogUser :one
-SELECT id, username, email, full_name, gender, current_location, password_hash, created_at, logined_at FROM blog_user
+SELECT id, username, email, full_name, gender, current_location, password_hash, logined_at, created_at FROM blog_user
 WHERE id = $1 LIMIT 1
 `
 
@@ -84,8 +84,8 @@ func (q *Queries) GetBlogUser(ctx context.Context, id int64) (BlogUser, error) {
 		&i.Gender,
 		&i.CurrentLocation,
 		&i.PasswordHash,
-		&i.CreatedAt,
 		&i.LoginedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -104,7 +104,7 @@ SET (
   $2, $3, $4, $5, $6, $7, $8
 )
 WHERE id = $1
-RETURNING id, username, email, full_name, gender, current_location, password_hash, created_at, logined_at
+RETURNING id, username, email, full_name, gender, current_location, password_hash, logined_at, created_at
 `
 
 type UpdateBlogUserParams struct {
@@ -138,8 +138,8 @@ func (q *Queries) UpdateBlogUser(ctx context.Context, arg UpdateBlogUserParams) 
 		&i.Gender,
 		&i.CurrentLocation,
 		&i.PasswordHash,
-		&i.CreatedAt,
 		&i.LoginedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }

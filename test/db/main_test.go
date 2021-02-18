@@ -1,4 +1,4 @@
-package db
+package test
 
 import (
 	"database/sql"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
+	db "github.com/saltchang/magfile-server/db/sqlc"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 	dbSource = "postgresql://root:secret@localhost:5432/magfile_server?sslmode=disable"
 )
 
-var testQueries *Queries
+var testQueries *db.Queries
 
 func TestMain(m *testing.M) {
 	conn, err := sql.Open(dbDriver, dbSource)
@@ -22,7 +23,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("Cannot connect to db:", err)
 	}
 
-	testQueries = New(conn)
+	testQueries = db.New(conn)
 
 	os.Exit(m.Run())
 }

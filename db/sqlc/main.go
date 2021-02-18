@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
+	_ "github.com/lib/pq"
 )
 
 // // Database is the extension struct of Queries
@@ -22,10 +24,12 @@ var database *Queries
 // Init will initialize stuff for database
 func Init(dbDriver, dbUser, dbPassword, dbHost, dbPort, dbName, dbParams string) (*Queries, error) {
 
+	log.Printf("postgresql://%s:%s@%s:%s/%s%s", dbUser, dbPassword, dbHost, dbPort, dbName, dbParams)
 	url := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s%s", dbUser, dbPassword, dbHost, dbPort, dbName, dbParams)
 
 	conn, err := sql.Open(dbDriver, url)
 	if err != nil {
+		log.Println("fail to connect to database")
 		return database, err
 	}
 

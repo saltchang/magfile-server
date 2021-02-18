@@ -3,6 +3,7 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -18,19 +19,55 @@ type BlogUser struct {
 	CurrentLocation string `json:"current_location"`
 	// password hashed with SHA-512
 	PasswordHash string    `json:"password_hash"`
-	CreatedAt    time.Time `json:"created_at"`
 	LoginedAt    time.Time `json:"logined_at"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type Post struct {
+	ID            int64         `json:"id"`
+	SemanticID    string        `json:"semantic_id"`
+	AuthorID      int64         `json:"author_id"`
+	SeriesID      sql.NullInt64 `json:"series_id"`
+	OrderInSeries sql.NullInt32 `json:"order_in_series"`
+	Title         string        `json:"title"`
+	Abstract      string        `json:"abstract"`
+	Content       string        `json:"content"`
+	Views         int64         `json:"views"`
+	IsArchived    bool          `json:"is_archived"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	CreatedAt     time.Time     `json:"created_at"`
+}
+
+type PostTag struct {
+	ID        int64     `json:"id"`
+	PostID    int64     `json:"post_id"`
+	TagID     int64     `json:"tag_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Series struct {
 	ID         int64     `json:"id"`
 	SemanticID string    `json:"semantic_id"`
 	AuthorID   int64     `json:"author_id"`
 	Title      string    `json:"title"`
 	Abstract   string    `json:"abstract"`
-	Content    string    `json:"content"`
-	Tags       []string  `json:"tags"`
 	IsArchived bool      `json:"is_archived"`
-	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+type Tag struct {
+	ID        int64     `json:"id"`
+	AuthorID  int64     `json:"author_id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Token struct {
+	ID     sql.NullInt64 `json:"id"`
+	UserID sql.NullInt64 `json:"user_id"`
+	// random string hashed with SHA-512
+	AccessToken string    `json:"access_token"`
+	ExpiredAt   time.Time `json:"expired_at"`
+	CreatedAt   time.Time `json:"created_at"`
 }

@@ -1,4 +1,4 @@
-package db
+package test
 
 import (
 	"context"
@@ -6,14 +6,15 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/saltchang/magfile-server/db/sqlc"
 	"github.com/saltchang/magfile-server/util"
 	"github.com/stretchr/testify/require"
 )
 
 const testSalt string = "testSalt_123+456/abcd"
 
-func createRandomBlogUser(t *testing.T) BlogUser {
-	params := CreateBlogUserParams{
+func createRandomBlogUser(t *testing.T) db.BlogUser {
+	params := db.CreateBlogUserParams{
 		Username:        util.GetRandomString(8),
 		Email:           util.GetRandomEmail(),
 		FullName:        util.GetRandomString(8),
@@ -66,7 +67,7 @@ func TestGetBlogUser(t *testing.T) {
 func TestUpdateBlogUser(t *testing.T) {
 	oldUser := createRandomBlogUser(t)
 
-	newParams := UpdateBlogUserParams{
+	newParams := db.UpdateBlogUserParams{
 		ID:              oldUser.ID,
 		Username:        util.GetRandomString(8),
 		Email:           util.GetRandomEmail(),
