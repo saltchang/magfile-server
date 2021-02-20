@@ -65,7 +65,8 @@ func main() {
 	// defer database.Close()
 
 	httpHandler := handler.NewHandler(database)
-	http.HandleFunc("/user/", httpHandler.GetUserByID)
+	http.HandleFunc("/users/", httpHandler.GetUserByID)
+	http.HandleFunc("/users", httpHandler.CreateAnUser)
 	// http.HandleFunc("/user/all", userAllHandler)
 
 	server := &http.Server{}
