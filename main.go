@@ -16,13 +16,6 @@ import (
 	"github.com/saltchang/magfile-server/handler"
 )
 
-func userHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("route /user was visted.")
-}
-func userAllHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("route /user/all was visted.")
-}
-
 func main() {
 
 	err := godotenv.Load(".env")
@@ -64,10 +57,8 @@ func main() {
 	}
 	// defer database.Close()
 
-	httpHandler := handler.NewHandler(database)
-	http.HandleFunc("/users/", httpHandler.GetUserByID)
-	http.HandleFunc("/users", httpHandler.CreateAnUser)
-	// http.HandleFunc("/user/all", userAllHandler)
+	h := handler.NewHandler(database)
+	http.HandleFunc("/", h.Router)
 
 	server := &http.Server{}
 
