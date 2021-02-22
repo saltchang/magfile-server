@@ -28,7 +28,7 @@ func (e *errorResponse) New(code ResponseCode, message ResponseMessage, remark s
 
 type errorHandler struct {
 	w http.ResponseWriter
-	r *http.Request
+	r *Request
 }
 
 func (h *errorHandler) writer(status int, err error, code ResponseCode, message ResponseMessage) {

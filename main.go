@@ -13,7 +13,7 @@ import (
 
 	"github.com/joho/godotenv"
 	db "github.com/saltchang/magfile-server/db/sqlc"
-	"github.com/saltchang/magfile-server/handler"
+	"github.com/saltchang/magfile-server/router"
 )
 
 func main() {
@@ -33,16 +33,6 @@ func main() {
 		dbName     = os.Getenv("POSTGRES_DB")
 		dbParams   = os.Getenv("POSTGRES_PARAMS")
 	)
-	// userHandler := NewUserHandler(map[string]db.BlogUser{
-	// 	"id1": {
-	// 		Username: "test",
-	// 	},
-	// })
-	// http.HandleFunc("/users", userHandler.get)
-	// err := http.ListenAndServe(os.Getenv(PORT), nil)
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", PORT))
 	if err != nil {
@@ -52,15 +42,13 @@ func main() {
 	log.Printf("Connecting database: %s", dbDriver)
 
 	database, err := db.Init(dbDriver, dbUser, dbPassword, dbHost, dbPort, dbName, dbParams)
+
 	if err != nil {
 		log.Fatalf("Could not set up database: %v", err)
 	}
-	// defer database.Close()
-
-	h := handler.NewHandler(database)
-	http.HandleFunc("/", h.Router)
 
 	server := &http.Server{}
+	server.Handler = router.UseRouter(database)
 
 	go func() {
 		server.Serve(listener)

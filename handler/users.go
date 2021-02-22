@@ -15,7 +15,7 @@ import (
 )
 
 // UsersHandler handles all request to route "/users" or "/users/*"
-func (h *HTTPHandler) UsersHandler(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) UsersHandler(w http.ResponseWriter, r *Request) {
 	eh := &errorHandler{w, r}
 	log.Printf("%s was visited.", r.URL)
 
@@ -23,12 +23,12 @@ func (h *HTTPHandler) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		// log.Println("GetUserByID")
 		// h.GetUserByID(w, r)
-		returnString(w, r, "Method: GET")
+		returnStringAsResponse(w, r, "Method: GET")
 		return
 	case http.MethodPost:
 		// log.Println("CreateAnUser")
 		// h.CreateAnUser(w, r)
-		returnString(w, r, "Method: POST")
+		returnStringAsResponse(w, r, "Method: POST")
 		return
 	default:
 		eh.httpMethodNotAllowed(nil)
@@ -37,7 +37,7 @@ func (h *HTTPHandler) UsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetUserByID get BlogUser from databae by the given user ID.
-func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *Request) {
 	eh := &errorHandler{w, r}
 
 	idString, err := handleURLPattern(r.URL.String(), 3, 2)
@@ -58,7 +58,7 @@ func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	h.Lock()
 
-	user, err := queries.GetBlogUser(context.Background(), id)
+	user, err := h.db.GetBlogUser(context.Background(), id)
 	h.Unlock()
 
 	if err != nil {
@@ -78,7 +78,7 @@ func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // CreateAnUser create a BlogUser by the request body raw.
-func (h *HTTPHandler) CreateAnUser(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) CreateAnUser(w http.ResponseWriter, r *Request) {
 	log.Println("CreateAnUser")
 	eh := &errorHandler{w, r}
 	_, err := handleURLPattern(r.URL.String(), 2, 1)
@@ -122,7 +122,7 @@ func (h *HTTPHandler) CreateAnUser(w http.ResponseWriter, r *http.Request) {
 		LoginedAt:       time.Now().UTC(),
 	}
 
-	newUser, err := queries.CreateBlogUser(context.Background(), params)
+	newUser, err := h.db.CreateBlogUser(context.Background(), params)
 	h.Unlock()
 
 	if err != nil {
