@@ -1,6 +1,6 @@
 postgres:
-	docker rm postgres13.2 || docker stop postgres13.2 && docker rm postgres13.2 || true
-	docker run --name postgres13.2 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:13.2-alpine
+	chmod u+x ./scripts/postgres.sh
+	./scripts/postgres.sh
 
 run-postgres:
 	docker run --name postgres13.2 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:13.2-alpine

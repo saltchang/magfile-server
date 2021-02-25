@@ -24,6 +24,8 @@ func main() {
 	}
 
 	var (
+		USE_SSL    = os.Getenv("USE_SSL")
+		HOST       = os.Getenv("HOST")
 		PORT       = os.Getenv("PORT")
 		dbDriver   = os.Getenv("POSTGRES_DRIVER")
 		dbUser     = os.Getenv("POSTGRES_USER")
@@ -54,7 +56,15 @@ func main() {
 		server.Serve(listener)
 	}()
 	defer Stop(server)
-	log.Printf("Server started on %s", PORT)
+
+	var protocol string
+
+	if USE_SSL == "true" {
+		protocol = "https"
+	} else {
+		protocol = "http"
+	}
+	log.Printf("Server started on %s://%s:%s", protocol, HOST, PORT)
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
