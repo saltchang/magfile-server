@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -28,13 +29,28 @@ type HTTPHandler struct {
 	db *db.Queries
 }
 
-func handleURLPattern(URL string, expected, target int) (string, error) {
-	parts := strings.Split(URL, "/")
-	if len(parts) != expected {
-		return "", nil
-	}
+// countURLPattern counts the amount of patterns in the given URL.
+func countURLPattern(URL string) int {
+	path := strings.TrimPrefix(strings.TrimSuffix(URL, "/"), "/")
+	parts := strings.Split(path, "/")
 
-	return parts[target], nil
+	return len(parts)
+}
+
+// getURLPattern parses then given URL string by expected index of target pattern, return the target string.
+func getURLPattern(URL string, target int) string {
+	path := strings.TrimPrefix(strings.TrimSuffix(URL, "/"), "/")
+	parts := strings.Split(path, "/")
+
+	return parts[target]
+}
+
+func parseURL(URL url.URL) (string, string) {
+	query := URL.RawQuery
+	URL.RawQuery = ""
+	path := URL.Path
+
+	return path, query
 }
 
 // NewHandler creates a new instance of httpHandler

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,34 +18,42 @@ import (
 // UsersHandler handles all request to route "/users" or "/users/*"
 func (h *HTTPHandler) UsersHandler(w http.ResponseWriter, r *Request) {
 	eh := &errorHandler{w, r}
-	log.Printf("%s was visited.", r.URL)
 
-	switch r.Method {
-	case http.MethodGet:
-		// log.Println("GetUserByID")
-		// h.GetUserByID(w, r)
-		returnStringAsResponse(w, r, "Method: GET")
-		return
-	case http.MethodPost:
-		// log.Println("CreateAnUser")
-		// h.CreateAnUser(w, r)
-		returnStringAsResponse(w, r, "Method: POST")
-		return
-	default:
-		eh.httpMethodNotAllowed(nil)
-		return
+	path, _ := parseURL(*r.URL)
+
+	patternCount := countURLPattern(path)
+
+	if patternCount == 1 {
+		switch r.Method {
+		case http.MethodPost:
+			log.Println("CreateAnUser")
+			// u.GetUserByID(w, r)
+			returnStringAsResponse(w, r, fmt.Sprintf("Method: %s", r.Method))
+			return
+		default:
+			eh.httpMethodNotAllowed(nil)
+			return
+		}
+	} else {
+		switch r.Method {
+		case http.MethodGet:
+			log.Println("GetUserByID")
+			// h.GetUserByID(w, r)
+			returnStringAsResponse(w, r, fmt.Sprintf("Method: %s", r.Method))
+			return
+		default:
+			eh.httpMethodNotAllowed(nil)
+			return
+		}
 	}
+
 }
 
 // GetUserByID get BlogUser from databae by the given user ID.
 func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *Request) {
 	eh := &errorHandler{w, r}
 
-	idString, err := handleURLPattern(r.URL.String(), 3, 2)
-	if err != nil {
-		eh.httpMethodNotAllowed(err)
-		return
-	}
+	idString := getURLPattern(r.URL.String(), 1)
 
 	log.Println(idString)
 
@@ -81,11 +90,6 @@ func (h *HTTPHandler) GetUserByID(w http.ResponseWriter, r *Request) {
 func (h *HTTPHandler) CreateAnUser(w http.ResponseWriter, r *Request) {
 	log.Println("CreateAnUser")
 	eh := &errorHandler{w, r}
-	_, err := handleURLPattern(r.URL.String(), 2, 1)
-	if err != nil {
-		eh.httpMethodNotAllowed(err)
-		return
-	}
 
 	hashSalt := os.Getenv("HASH_SALT")
 
