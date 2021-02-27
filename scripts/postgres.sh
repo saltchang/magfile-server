@@ -1,7 +1,7 @@
-if [ "$( docker container inspect -f '{{.State.Status}}' postgres13.2 )" == "running" ];
+if [ "$( docker container inspect -f '{{.State.Status}}' postgres_magfile )" == "running" ];
 then
-    docker stop postgres13.2;
+    docker stop postgres_magfile;
 fi
 
-docker rm postgres13.2;
+docker rm postgres_magfile;
 make run-postgres;
