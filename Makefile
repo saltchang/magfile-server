@@ -32,4 +32,4 @@ test:
 reset-db:
 	make stop-postgres;make postgres;sleep 5;make createdb;make migrateup;sleep .5;echo "\nRest DB done.";
 
-.PHONY: postgres run-postgres stop-postgres createdb dropdb migrateup migratedown sqlc test reset-db
+.PHONY: postgres run-postgres stop-postgres createdb dropdb accessdb migrateup migratedown sqlc test reset-db
