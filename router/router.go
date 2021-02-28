@@ -4,11 +4,10 @@ import (
 	"net/http"
 	"regexp"
 
-	db "github.com/saltchang/magfile-server/db/sqlc"
 	"github.com/saltchang/magfile-server/handler"
 )
 
-var database *db.Queries
+var h *handler.HTTPHandler
 
 // Router struct implements http.Handler, so that it may be used with the
 // default http library.  It keeps a registry mapping regexes to functions for
@@ -99,11 +98,18 @@ func (r *RouteRegex) Match(target string) *RouteMatch {
 }
 
 // UseRouter create a router for the server to handling all routes
-func UseRouter(db *db.Queries) *Router {
-	database = db
+func UseRouter(innerHandler *handler.HTTPHandler) *Router {
 	router := NewRouter()
 
-	for pattern, fn := range Routes {
+	h = innerHandler
+
+	routes := map[string]interface{}{
+		"^/$":             h.HomeHandler,
+		"^/users(/)?$":    h.UsersHandler,
+		"^/users/(\\d)+$": h.UsersHandler,
+	}
+
+	for pattern, fn := range routes {
 		router.AddRoute(
 			pattern, fn.(func(http.ResponseWriter, *handler.Request)),
 		)

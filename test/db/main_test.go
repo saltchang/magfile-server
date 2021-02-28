@@ -12,7 +12,7 @@ import (
 
 const (
 	dbDriver = "postgres"
-	dbSource = "postgresql://root:secret@localhost:5432/magfile_server?sslmode=disable"
+	dbSource = "postgresql://root:secret@localhost:5437/magfile_server?sslmode=disable"
 )
 
 var testQueries *db.Queries

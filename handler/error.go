@@ -59,9 +59,17 @@ func (h *errorHandler) badRequest(err error) {
 }
 
 func (h *errorHandler) internalServerError(err error) {
-	h.writer(http.StatusInternalServerError, err, RcWrongRequestURL, RmWrongRequestURL)
+	h.writer(http.StatusInternalServerError, err, RcInternalServerError, RmInternalServerError)
 }
 
 func (h *errorHandler) unsupportedMediaType(err error) {
 	h.writer(http.StatusUnsupportedMediaType, err, RcWrongRequestURL, RmWrongRequestURL)
+}
+
+func (h *errorHandler) duplicateUsername(err error) {
+	h.writer(http.StatusConflict, err, RcDuplicateUsername, RmDuplicateUsername)
+}
+
+func (h *errorHandler) duplicateEmail(err error) {
+	h.writer(http.StatusConflict, err, RcDuplicateEmail, RmDuplicateEmail)
 }

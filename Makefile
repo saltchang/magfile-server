@@ -3,7 +3,7 @@ postgres:
 	./scripts/postgres.sh
 
 run-postgres:
-	docker run --name postgres_magfile -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:13.2-alpine
+	docker run --name postgres_magfile -p 5437:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:13.2-alpine
 
 stop-postgres:
 	docker stop postgres_magfile
@@ -18,10 +18,10 @@ accessdb:
 	docker exec -it postgres_magfile psql -U root magfile_server
 
 migrateup:
-	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/magfile_server?sslmode=disable" -verbose up
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5437/magfile_server?sslmode=disable" -verbose up
 
 migratedown:
-	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/magfile_server?sslmode=disable" -verbose down
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5437/magfile_server?sslmode=disable" -verbose down
 
 sqlc:
 	sqlc generate

@@ -16,6 +16,14 @@ RETURNING *;
 SELECT * FROM blog_user
 WHERE id = $1 LIMIT 1;
 
+-- name: GetBlogUserByUsername :one
+SELECT * FROM blog_user
+WHERE username = $1 LIMIT 1;
+
+-- name: GetBlogUserByEmail :one
+SELECT * FROM blog_user
+WHERE email = $1 LIMIT 1;
+
 -- name: UpdateBlogUser :one
 UPDATE blog_user
 SET (

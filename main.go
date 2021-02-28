@@ -13,6 +13,7 @@ import (
 
 	"github.com/joho/godotenv"
 	db "github.com/saltchang/magfile-server/db/sqlc"
+	"github.com/saltchang/magfile-server/handler"
 	"github.com/saltchang/magfile-server/router"
 )
 
@@ -50,7 +51,8 @@ func main() {
 	}
 
 	server := &http.Server{}
-	server.Handler = router.UseRouter(database)
+	h := handler.NewHandler(database)
+	server.Handler = router.UseRouter(h)
 
 	go func() {
 		server.Serve(listener)

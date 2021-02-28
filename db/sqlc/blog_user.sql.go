@@ -90,6 +90,50 @@ func (q *Queries) GetBlogUser(ctx context.Context, id int64) (BlogUser, error) {
 	return i, err
 }
 
+const getBlogUserByEmail = `-- name: GetBlogUserByEmail :one
+SELECT id, username, email, full_name, gender, current_location, password_hash, logined_at, created_at FROM blog_user
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetBlogUserByEmail(ctx context.Context, email string) (BlogUser, error) {
+	row := q.db.QueryRowContext(ctx, getBlogUserByEmail, email)
+	var i BlogUser
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.FullName,
+		&i.Gender,
+		&i.CurrentLocation,
+		&i.PasswordHash,
+		&i.LoginedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getBlogUserByUsername = `-- name: GetBlogUserByUsername :one
+SELECT id, username, email, full_name, gender, current_location, password_hash, logined_at, created_at FROM blog_user
+WHERE username = $1 LIMIT 1
+`
+
+func (q *Queries) GetBlogUserByUsername(ctx context.Context, username string) (BlogUser, error) {
+	row := q.db.QueryRowContext(ctx, getBlogUserByUsername, username)
+	var i BlogUser
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.FullName,
+		&i.Gender,
+		&i.CurrentLocation,
+		&i.PasswordHash,
+		&i.LoginedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const updateBlogUser = `-- name: UpdateBlogUser :one
 UPDATE blog_user
 SET (

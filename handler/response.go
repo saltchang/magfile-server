@@ -16,8 +16,15 @@ const (
 	RcWrongRequestURL ResponseCode = 2000
 	RcWrongParams     ResponseCode = 2100
 
+	// Params
+	RcDuplicateUsername ResponseCode = 3000
+	RcDuplicateEmail    ResponseCode = 3001
+
 	// HTTP Status: 405 Method Not Allowed
 	RcMethodNotAllowed ResponseCode = http.StatusMethodNotAllowed
+
+	// HTTP Status: 500 Internal Server Error
+	RcInternalServerError ResponseCode = http.StatusInternalServerError
 
 	// Undefined Error
 	RcUndefined ResponseCode = 9999
@@ -34,11 +41,22 @@ type ResponseMessage string
 
 // One of the collections of ResponseMessage
 const (
-	RmWrongRequestURL ResponseMessage = "Wrong request URL."
-	RmWrongParams     ResponseMessage = "Bad request: Wrong parameters."
+	// Normal
+	RmSuccess ResponseMessage = "Success"
+
+	// Error
+	RmWrongRequestURL ResponseMessage = "Wrong request URL"
+	RmWrongParams     ResponseMessage = "Bad request: Wrong parameters"
+
+	// Params
+	RmDuplicateUsername ResponseMessage = "Duplicate username"
+	RmDuplicateEmail    ResponseMessage = "Duplicate email"
 
 	// HTTP Status: 405 Method Not Allowed
 	RmMethodNotAllowed ResponseMessage = "Method Not Allowed"
+
+	// HTTP Status: 500 Internal Server Error
+	RmInternalServerError ResponseMessage = "Internal Server Error"
 )
 
 // Response is the response struct, contains basic response and data.

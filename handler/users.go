@@ -15,6 +15,14 @@ import (
 	"github.com/saltchang/magfile-server/util"
 )
 
+// CreateAnUserRequestBody is a struct of the raw body content of the request of creating an user.
+type CreateAnUserRequestBody struct {
+	Username     string `json:"username"`
+	Email        string `json:"email"`
+	FullName     string `json:"full_name"`
+	PasswordHash string `json:"password_hash"`
+}
+
 // UsersHandler handles all request to route "/users" or "/users/*"
 func (h *HTTPHandler) UsersHandler(w http.ResponseWriter, r *Request) {
 	eh := &errorHandler{w, r}
@@ -27,8 +35,7 @@ func (h *HTTPHandler) UsersHandler(w http.ResponseWriter, r *Request) {
 		switch r.Method {
 		case http.MethodPost:
 			log.Println("CreateAnUser")
-			// u.GetUserByID(w, r)
-			returnStringAsResponse(w, r, fmt.Sprintf("Method: %s", r.Method))
+			h.CreateAnUser(w, r)
 			return
 		default:
 			eh.httpMethodNotAllowed(nil)
@@ -107,25 +114,46 @@ func (h *HTTPHandler) CreateAnUser(w http.ResponseWriter, r *Request) {
 		return
 	}
 
-	var user db.BlogUser
-	err = json.Unmarshal(bodyBytes, &user)
+	var requestedUser *CreateAnUserRequestBody
+	err = json.Unmarshal(bodyBytes, &requestedUser)
 	if err != nil {
 		eh.badRequest(err)
 		return
 	}
 
+	// Check username
 	h.Lock()
+	_, err = h.db.GetBlogUserByUsername(context.Background(), requestedUser.Username)
+	h.Unlock()
+
+	if err == nil {
+		eh.duplicateUsername(nil)
+		log.Printf("Creating BlogUser failed, duplicate username")
+		return
+	}
+
+	// Check email
+	h.Lock()
+	_, err = h.db.GetBlogUserByEmail(context.Background(), requestedUser.Email)
+	h.Unlock()
+
+	if err == nil {
+		eh.duplicateEmail(nil)
+		log.Printf("Creating BlogUser failed, duplicate email")
+		return
+	}
 
 	params := db.CreateBlogUserParams{
-		Username:        user.Username,
-		Email:           user.Email,
-		FullName:        user.FullName,
-		Gender:          user.Gender,
-		CurrentLocation: user.CurrentLocation,
-		PasswordHash:    util.GetPasswordHash(user.PasswordHash, hashSalt),
+		Username:        requestedUser.Username,
+		Email:           requestedUser.Email,
+		FullName:        requestedUser.FullName,
+		Gender:          "",
+		CurrentLocation: "",
+		PasswordHash:    util.GetPasswordHash(requestedUser.PasswordHash, hashSalt),
 		LoginedAt:       time.Now().UTC(),
 	}
 
+	h.Lock()
 	newUser, err := h.db.CreateBlogUser(context.Background(), params)
 	h.Unlock()
 
